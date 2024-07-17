@@ -42,8 +42,9 @@ def main():
         st.json(case_content)
         
     elif view_option == "Output":
-        output_file_name = selected_case.replace('.json', '_output.json')
-        output_files = [f for f in os.listdir(outputs_dir) if f.startswith(output_file_name)]
+        output_summary_file_name = selected_case.replace('.json', '_summary.json')
+        output_importance_file_name = selected_case.replace('.json', '_output.json')
+        output_files = [output_summary_file_name, output_importance_file_name]
         if output_files:
             selected_output = st.sidebar.selectbox("Choose an Output File", output_files)
             output_path = os.path.join(outputs_dir, selected_output)
