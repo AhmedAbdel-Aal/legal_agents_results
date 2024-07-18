@@ -22,41 +22,37 @@ def main():
     
     # Get cases for the selected agent
     cases_dir = os.path.join(agents_dir, selected_agent, 'cases')
+    summaries = os.path.join(agents_dir, selected_agent, 'summaries')
     outputs_dir = os.path.join(agents_dir, selected_agent, 'outputs')
     cases = [f for f in os.listdir(cases_dir) if f.endswith('.json')]
-
-    print(cases_dir)
-    print(outputs_dir)
-    print(cases)
     
     # Select a case
     selected_case = st.sidebar.selectbox("Choose a Case", cases)
+    selected_case_summary = selected_case.replace('.json', '_summary.json')
+    selected_case_output = selected_case.replace('.json', '_output.json')
     
     # View case or output
-    view_option = st.sidebar.radio("View", ["Case", "Output"])
+    view_option = st.sidebar.radio("View", ["Case", "Summary", "Output"])
     
     if view_option == "Case":
         case_path = os.path.join(cases_dir, selected_case)
         case_content = load_file(case_path)
         st.subheader("Case Content")
         st.json(case_content)
+
+    if view_option == "Summary":
+        case_path = os.path.join(summaries, selected_case_summary)
+        case_content = load_file(case_path)
+        only_summary_dict = {}
+        only_summary_dict['summarized_case'] = case_content['summarized_case']
+        st.subheader("Case Summary")
+        st.json(only_summary_dict)
         
     elif view_option == "Output":
-        output_summary_file_name = selected_case.replace('.json', '_summary.json')
-        output_importance_file_name = selected_case.replace('.json', '_output.json')
-        output_files = [output_summary_file_name, output_importance_file_name]
-        if output_files:
-            selected_output = st.sidebar.selectbox("Choose an Output File", output_files)
-            output_path = os.path.join(outputs_dir, selected_output)
-            output_content = load_file(output_path)
-            
-            st.subheader("Output Content")
-            if selected_output.endswith('.json'):
-                st.json(output_content)
-            else:
-                st.text(output_content)
-        else:
-            st.warning("No output file found for the selected case.")
+        case_path = os.path.join(outputs_dir, selected_case_output)
+        case_content = load_file(case_path)
+        st.subheader("Case Predicted Importance")
+        st.json(case_content)
 
 if __name__ == '__main__':
     main()
