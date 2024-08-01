@@ -1,18 +1,20 @@
+import os
 import streamlit as st
 import json
-import os
 
 def load_file(file_path):
-    with open(file_path, 'r') as file:
-        if file_path.endswith('.json'):
+    try:
+        with open(file_path, 'r') as file:
             return json.load(file)
-        else:
-            return file.read()
+    except Exception as e:
+        st.error(f"Error loading file {file_path}: {e}")
+        return None
 
 def main():
     st.title("Legal AI Agent Viewer")
     
     agents_dir = 'agents'
+    data_dir = 'data'
     
     # Get list of agents
     agents = [d for d in os.listdir(agents_dir) if os.path.isdir(os.path.join(agents_dir, d))]
@@ -21,38 +23,38 @@ def main():
     selected_agent = st.sidebar.selectbox("Choose an Agent", agents)
     
     # Get cases for the selected agent
-    cases_dir = os.path.join(agents_dir, selected_agent, 'cases')
-    summaries = os.path.join(agents_dir, selected_agent, 'summaries')
+    cases_dir = os.path.join(data_dir)
     outputs_dir = os.path.join(agents_dir, selected_agent, 'outputs')
     cases = [f for f in os.listdir(cases_dir) if f.endswith('.json')]
     
     # Select a case
     selected_case = st.sidebar.selectbox("Choose a Case", cases)
-    selected_case_summary = selected_case.replace('.json', '_summary.json')
     selected_case_output = selected_case.replace('.json', '_output.json')
+    st.write("Selected case:", selected_case)
+    st.write("Selected case output:", selected_case_output)
     
     # View case or output
-    view_option = st.sidebar.radio("View", ["Case", "Summary", "Output"])
+    view_option = st.sidebar.radio("View", ["Case", "Output"])
     
     if view_option == "Case":
         case_path = os.path.join(cases_dir, selected_case)
+        st.write("Case path:", case_path)
         case_content = load_file(case_path)
-        st.subheader("Case Content")
-        st.json(case_content)
+        if case_content:
+            st.subheader("Case Content")
+            st.json(case_content)
+        else:
+            st.error("Failed to load case content")
 
-    if view_option == "Summary":
-        case_path = os.path.join(summaries, selected_case_summary)
-        case_content = load_file(case_path)
-        only_summary_dict = {}
-        only_summary_dict['summarized_case'] = case_content['summarized_case']
-        st.subheader("Case Summary")
-        st.json(only_summary_dict)
-        
     elif view_option == "Output":
         case_path = os.path.join(outputs_dir, selected_case_output)
+        st.write("Output case path:", case_path)
         case_content = load_file(case_path)
-        st.subheader("Case Predicted Importance")
-        st.json(case_content)
+        if case_content:
+            st.subheader("Case Predicted Importance")
+            st.json(case_content)
+        else:
+            st.error("Failed to load case output")
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
